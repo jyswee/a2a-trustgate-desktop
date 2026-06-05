@@ -1,0 +1,49 @@
+{
+  "name": "a2a-trustgate",
+  "version": "1.0.0",
+  "description": "A2A TrustGate Desktop — AI safety screening for your company",
+  "main": "src/main/index.js",
+  "author": "Joe Wee <joe@tyga.cloud>",
+  "license": "SEE LICENSE IN LICENSE",
+  "copyright": "Copyright (c) 2026 Tyga.Cloud Ltd",
+  "homepage": "https://a2ainfrastructure.com",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.tyga.a2a-trustgate",
+    "productName": "A2A TrustGate",
+    "copyright": "Copyright © 2026 Tyga.Cloud Ltd",
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.business"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
+  }
+}

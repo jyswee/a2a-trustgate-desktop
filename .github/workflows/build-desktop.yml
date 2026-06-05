@@ -1,0 +1,88 @@
+name: Build Desktop (Windows + Linux)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            build_cmd: npm run build:win
+            artifact_glob: 'dist/*.exe'
+          - os: ubuntu-latest
+            build_cmd: npm run build:linux
+            artifact_glob: 'dist/*.AppImage'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout public repo (workflow only)
+        uses: actions/checkout@v4
+
+      - name: Clone private source
+        run: |
+          git clone https://x-access-token:${{ secrets.SRC_PAT }}@github.com/jyswee/a2a-trustgate-desktop-src.git src-private
+        shell: bash
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: src-private
+        run: npm ci
+
+      - name: Obfuscate source
+        working-directory: src-private
+        run: npm run obfuscate
+
+      - name: Build
+        working-directory: src-private
+        run: ${{ matrix.build_cmd }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.os }}
+          path: src-private/dist/*
+          retention-days: 1
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: A2A TrustGate Desktop v${{ inputs.version }}
+          body: |
+            ## A2A TrustGate Desktop v${{ inputs.version }}
+
+            Download the installer for your platform:
+            - **Windows**: `.exe` installer
+            - **Linux**: `.AppImage` portable app
+            - **macOS**: download from [a2ainfrastructure.com/download](https://a2ainfrastructure.com/download)
+
+            Requires an A2A Infrastructure account and API key.
+          files: artifacts/**/*
+          draft: false
+          prerelease: false
