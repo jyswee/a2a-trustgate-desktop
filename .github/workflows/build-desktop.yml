@@ -50,7 +50,7 @@ jobs:
 
       - name: Build
         working-directory: src-private
-        run: ${{ matrix.build_cmd }} --publish never
+        run: npx electron-builder --publish never ${{ matrix.os == 'windows-latest' && '--win' || '--linux' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
