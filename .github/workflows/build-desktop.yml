@@ -40,6 +40,11 @@ jobs:
         with:
           node-version: 18
 
+      - name: Stamp release version (electron-builder names assets from package.json)
+        working-directory: src-private
+        run: npm pkg set version=${{ inputs.version }}
+        shell: bash
+
       - name: Install dependencies
         working-directory: src-private
         run: npm ci
